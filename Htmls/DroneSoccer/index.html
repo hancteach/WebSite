@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>無人機足球製作紀錄</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+/* 版面：左側版本時間軸（桌機固定、手機改為橫向捲動列）＋右側各版本截圖格線；點圖放大檢視。兩隊球門的紅、藍分別代表「製作過程」與「測試驗證」 */
+:root {
+  --bg: #eef1f6; --surface: #ffffff; --ink: #121826; --muted: #586377; --line: #d6dce7;
+  --make: #2a63d4; --test: #cf3a40; --chip: #e3e8f1; --shade: rgba(10, 14, 22, .92);
+  --f-display: "Chakra Petch", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  --f-body: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0c1017; --surface: #151b26; --ink: #e7ebf3; --muted: #97a1b3; --line: #262e3d; --make: #5d8cff; --test: #ff5d63; --chip: #1e2633; --shade: rgba(4, 6, 10, .94); color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #0c1017; --surface: #151b26; --ink: #e7ebf3; --muted: #97a1b3; --line: #262e3d; --make: #5d8cff; --test: #ff5d63; --chip: #1e2633; --shade: rgba(4, 6, 10, .94); color-scheme: dark; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.65; }
+.wrap { max-width: 1320px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 36px 64px; }
+header.top { display: grid; gap: 14px; margin-bottom: 26px; }
+.kicker { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+h1 { margin: 0; font-size: clamp(28px, 4.2vw, 44px); font-weight: 900; line-height: 1.2; text-wrap: balance; letter-spacing: .01em; }
+h1 .goal { display: inline-block; width: .5em; height: .5em; border-radius: 50%; border: .12em solid var(--test); margin-right: .25em; vertical-align: .05em; }
+h1 .goal + .goal { border-color: var(--make); margin-left: -.18em; }
+.lede { max-width: 68ch; color: var(--muted); margin: 0; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 13px; color: var(--muted); }
+.facts b { font-family: var(--f-display); font-size: 22px; color: var(--ink); margin-right: 4px; font-variant-numeric: tabular-nums; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.filters button { font: inherit; font-size: 13px; font-weight: 500; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 6px 14px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+.filters button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.filters button:focus-visible, .shot button:focus-visible, nav.toc a:focus-visible, .lb button:focus-visible { outline: 2px solid var(--make); outline-offset: 2px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.dot.make { background: var(--make); } .dot.test { background: var(--test); }
+
+.layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 36px; align-items: start; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); display: grid; gap: 2px; border-left: 2px solid var(--line); }
+nav.toc a { display: grid; gap: 0; padding: 7px 0 7px 14px; margin-left: -2px; border-left: 2px solid transparent; color: var(--muted); text-decoration: none; font-size: 13px; line-height: 1.35; }
+nav.toc a .v { font-family: var(--f-display); font-weight: 700; font-size: 15px; color: var(--ink); }
+nav.toc a.on { border-left-color: var(--test); color: var(--ink); }
+nav.toc a.on .v { color: var(--test); }
+
+section.ch { padding-top: 8px; margin-bottom: 52px; scroll-margin-top: 20px; }
+.ch-head { display: grid; gap: 6px; margin-bottom: 18px; max-width: 78ch; }
+.ver { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.ver .v { font-family: var(--f-display); font-weight: 700; font-size: 30px; line-height: 1; letter-spacing: .02em; padding-bottom: 4px; background: linear-gradient(90deg, var(--test) 0 50%, var(--make) 50% 100%) left bottom / 100% 3px no-repeat; }
+.ver .t { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+h2 { margin: 0; font-size: 21px; font-weight: 700; text-wrap: balance; }
+.ch-head p { margin: 0; color: var(--muted); }
+.count { font-size: 12px; color: var(--muted); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 18px; }
+figure.shot { margin: 0; display: grid; gap: 8px; align-content: start; min-width: 0; }
+figure.shot[hidden] { display: none; }
+.shot button { all: unset; cursor: zoom-in; display: block; position: relative; border-radius: 6px; overflow: hidden; background: var(--chip); aspect-ratio: 16 / 9; max-width: 100%; }
+.shot img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s ease; }
+.shot button:hover img { transform: scale(1.03); }
+.tag { position: absolute; left: 8px; top: 8px; font-size: 11px; font-weight: 700; letter-spacing: .06em; color: #fff; padding: 2px 8px; border-radius: 3px; }
+.tag.make { background: var(--make); } .tag.test { background: var(--test); }
+figcaption { font-size: 13.5px; line-height: 1.55; color: var(--ink); }
+
+/* 放大檢視 */
+.lb { position: fixed; inset: 0; background: var(--shade); display: grid; grid-template-rows: auto 1fr auto; z-index: 50; padding: calc(env(safe-area-inset-top, 0px) + 10px) max(12px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 14px) max(12px, env(safe-area-inset-left, 0px)); color: #eef1f6; }
+.lb .bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-family: var(--f-mono); font-size: 12px; color: #b9c2d3; }
+.lb .stage { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: 0; }
+.lb img { max-width: 100%; max-height: 100%; margin: auto; display: block; object-fit: contain; min-height: 0; border-radius: 4px; }
+.lb .imgbox { height: 100%; min-height: 0; display: grid; }
+.lb button { font: inherit; background: rgba(255,255,255,.1); color: #fff; border: 1px solid rgba(255,255,255,.2); border-radius: 999px; width: 44px; height: 44px; font-size: 20px; cursor: pointer; }
+.lb button:hover { background: rgba(255,255,255,.2); }
+.lb .cap { max-width: 900px; margin: 10px auto 0; text-align: center; font-size: 15px; line-height: 1.6; }
+.lb .cap small { display: block; font-family: var(--f-mono); font-size: 11px; color: #9aa4b6; margin-top: 4px; }
+footer { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); max-width: 80ch; }
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  nav.toc { position: static; display: flex; overflow-x: auto; border-left: 0; border-bottom: 2px solid var(--line); gap: 4px; }
+  nav.toc a { border-left: 0; border-bottom: 2px solid transparent; margin: 0 0 -2px; padding: 6px 10px; white-space: nowrap; }
+  nav.toc a .n { display: none; }
+  nav.toc a.on { border-bottom-color: var(--test); }
+  .lb .stage { grid-template-columns: minmax(0, 1fr); }
+  .lb .stage > button { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .shot img { transition: none; } html { scroll-behavior: auto; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="kicker">05_遊戲 / 20261016_無人機足球模擬_Web</div>
+    <h1><span class="goal"></span><span class="goal"></span>無人機足球模擬系統　製作與測試紀錄</h1>
+    <p class="lede">從第 5 階段到 v0.10.0 的開發過程與驗證截圖。這些畫面都是在雲端用無頭瀏覽器（沒有顯示卡，以軟體算圖）實際操作時拍下的；藍色標籤是製作過程中的成果與調整，紅色標籤是測試驗證時的畫面。點圖片可以放大，用左右鍵切換。</p>
+    <div class="facts" id="facts"></div>
+    <div class="filters" role="group" aria-label="篩選">
+      <button id="f-all" data-f="all" aria-pressed="true">全部</button>
+      <button id="f-make" data-f="make" aria-pressed="false"><span class="dot make"></span>製作過程</button>
+      <button id="f-test" data-f="test" aria-pressed="false"><span class="dot test"></span>測試驗證</button>
+    </div>
+  </header>
+  <div class="layout">
+    <nav class="toc" id="toc" aria-label="版本"></nav>
+    <main id="main"></main>
+  </div>
+  <footer>截圖整理於 2026-10-17。原始畫面解析度多為 1280×720 或 1120×630；放大檢視為縮小到 1600 px 寬的版本。軟體算圖每秒只有約 1～4 張畫面，實際顯示卡上的流暢度請以教室電腦「設定 → 畫面」的 FPS 為準。</footer>
+</div>
+
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="截圖放大檢視">
+  <div class="bar"><span id="lbPos"></span><button id="lbClose" aria-label="關閉">✕</button></div>
+  <div class="stage">
+    <button id="lbPrev" aria-label="上一張">‹</button>
+    <div class="imgbox"><img id="lbImg" alt=""></div>
+    <button id="lbNext" aria-label="下一張">›</button>
+  </div>
+  <div class="cap" id="lbCap"></div>
+</div>
+
+<script>
+const DATA = [{"id": "overview", "ver": "v0.10.0", "title": "系統功能總覽", "time": "10/17 14:42", "summary": "最新版本的端對端測試截圖，依實際使用流程排列：主機大廳 → 操作手電腦配對 → 手機遙控器 → 飛行視角 → 設定 → 大屏觀賽 → 裁判台 → 重播。每張都是無頭瀏覽器自動操作時拍下的真實畫面（主控台錯誤 0 筆）。", "items": [{"f": "overview-01", "cat": "test", "cap": "主機大廳：顯示各網址、目前場地與連線狀態，老師開啟主機後第一個看到的畫面。", "src": "e2e10/0_lobby.png", "w": 1280, "h": 863}, {"f": "overview-02", "cat": "test", "cap": "操作手電腦：右側 QR Code 與 4 位數配對碼，手機掃描即可綁定這台球機。", "src": "e2e10/1_station_pairing.png", "w": 1280, "h": 720}, {"f": "overview-03", "cat": "test", "cap": "手機遙控器：橫向雙搖桿介面，準備完成後按「開始」。", "src": "e2e10/2_pad_ready.png", "w": 1600, "h": 739}, {"f": "overview-04", "cat": "test", "cap": "握手確認：電腦端提示學生依序推動手機搖桿，確認綁到的是自己這台。", "src": "e2e10/2b_station_handshake.png", "w": 1280, "h": 720}, {"f": "overview-05", "cat": "test", "cap": "手機操控起飛中：上方顯示模式、電池、高度與延遲。", "src": "e2e10/3_pad_flying.png", "w": 1600, "h": 739}, {"f": "overview-06", "cat": "test", "cap": "操作手畫面：追尾視角，下方為高度、速度、電池、主機延遲儀表。", "src": "e2e10/4_station_chase.png", "w": 1280, "h": 720}, {"f": "overview-07", "cat": "test", "cap": "場邊視角：模擬實際站在場邊操控的視野。", "src": "e2e10/5_station_side.png", "w": 1280, "h": 720}, {"f": "overview-08", "cat": "test", "cap": "第一人稱（FPV）視角。", "src": "e2e10/6_station_fpv.png", "w": 1280, "h": 720}, {"f": "overview-09", "cat": "test", "cap": "設定 → 手感：Actual Rates、油門曲線等飛行參數。", "src": "e2e10/6a_settings_feel.png", "w": 1280, "h": 720}, {"f": "overview-10", "cat": "test", "cap": "設定 → 匯入 Betaflight 參數，讓真機設定直接帶進模擬器。", "src": "e2e10/6b_settings_bf.png", "w": 1280, "h": 720}, {"f": "overview-11", "cat": "test", "cap": "設定 → USB 遙控器：偵測與六步驟校正精靈。", "src": "e2e10/6c_settings_radio.png", "w": 1280, "h": 720}, {"f": "overview-12", "cat": "test", "cap": "手機體感模式（HTTPS）：傾斜手機操控的設定頁。", "src": "e2e10/3d_pad_https_settings.png", "w": 1600, "h": 739}, {"f": "overview-13", "cat": "test", "cap": "物理參數調校工具：推力、阻力等數值即時套用到所有球機。", "src": "e2e10/9_tuner.png", "w": 1280, "h": 1246}, {"f": "overview-14", "cat": "test", "cap": "網路健檢：上課前檢查教室網路延遲。", "src": "e2e10/10_netcheck.png", "w": 420, "h": 860}, {"f": "overview-15", "cat": "test", "cap": "HTTPS 憑證安裝說明頁（手機體感操控需要）。", "src": "e2e10/11_cert.png", "w": 420, "h": 1388}, {"f": "overview-16", "cat": "test", "cap": "大屏：開賽前自動顯示雙方出場名單。", "src": "e2eb10/b1_lineup.png", "w": 1120, "h": 630}, {"f": "overview-17", "cat": "test", "cap": "大屏自動導播：攻擊手逼近球門時切到球門後方鏡頭。", "src": "e2eb10/b2_auto_goalcam.png", "w": 1120, "h": 630}, {"f": "overview-18", "cat": "test", "cap": "進球時的大字提示與下方跑馬燈。", "src": "e2eb10/b3_goal_ticker.png", "w": 1120, "h": 630}, {"f": "overview-19", "cat": "test", "cap": "進球重播（第 2 段，½ 慢動作）。", "src": "e2eb10/b4_replay_rp2.png", "w": 1120, "h": 630}, {"f": "overview-20", "cat": "test", "cap": "裁判台：比分、計時、全場俯視小地圖、大屏導播控制與機位表。", "src": "e2eb10/b6_admin_director.png", "w": 1400, "h": 900}, {"f": "overview-21", "cat": "test", "cap": "分割畫面：全場＋雙方攻擊手第一人稱。", "src": "e2eb10/b7_split.png", "w": 1120, "h": 630}, {"f": "overview-22", "cat": "test", "cap": "指定跟拍某一架球機。", "src": "e2eb10/b9_follow_blue1.png", "w": 1120, "h": 630}, {"f": "overview-23", "cat": "test", "cap": "終場：賽後成績（進球、射門、撞擊、飛行時間、最高速度）。", "src": "e2eb10/b11_final_stats.png", "w": 1120, "h": 630}, {"f": "overview-24", "cat": "test", "cap": "重播頁：讀取比賽錄影檔，時間軸上標出每個進球。", "src": "e2eb10/b12_replay_page.png", "w": 1280, "h": 720}]}, {"id": "v05", "ver": "v0.5.0", "title": "第 5 階段：大屏觀賽與擬真畫面", "time": "10/17 00:25–01:36", "summary": "加入體育館場景、觀眾、Bloom 發光、自動導播、三段式進球重播、資訊頁與 OBS 直播用的乾淨輸出。這時的場館和觀眾都還是程式產生的簡易模型。", "items": [{"f": "v05-01", "cat": "make", "cap": "低畫質：無陰影、無發光，給舊電腦使用。", "src": "shots/smoke_speclow.png", "w": 1280, "h": 720}, {"f": "v05-02", "cat": "make", "cap": "標準畫質：陰影、LED 發光、完整場館。", "src": "shots/smoke_spec.png", "w": 1280, "h": 720}, {"f": "v05-03", "cat": "make", "cap": "高畫質：再加碎屑粒子與更細緻的發光。三張對照可以看出畫質差異。", "src": "shots/smoke_spechigh.png", "w": 1280, "h": 720}, {"f": "v05-04", "cat": "make", "cap": "進球重播第 1 段：跟拍攻擊手。", "src": "shots/c_track.png", "w": 1120, "h": 630}, {"f": "v05-05", "cat": "make", "cap": "重播第 2 段：球門後方 ½ 慢動作。", "src": "shots/c_goal.png", "w": 1120, "h": 630}, {"f": "v05-06", "cat": "make", "cap": "重播第 3 段：0.3 倍特寫。", "src": "shots/c_close.png", "w": 1120, "h": 630}, {"f": "v05-07", "cat": "make", "cap": "資訊頁：出場名單。", "src": "shots/d_lineup.png", "w": 1120, "h": 630}, {"f": "v05-08", "cat": "make", "cap": "資訊頁：比分總覽。", "src": "shots/d_standings.png", "w": 1120, "h": 630}, {"f": "v05-09", "cat": "make", "cap": "分割畫面第一版。", "src": "shots/d_split.png", "w": 1120, "h": 630}, {"f": "v05-10", "cat": "make", "cap": "自由鏡頭：滑鼠拖曳旋轉、滾輪縮放。", "src": "shots/d_free.png", "w": 1120, "h": 630}, {"f": "v05-11", "cat": "make", "cap": "OBS 乾淨輸出：沒有按鈕與說明，只留轉播圖卡。", "src": "shots/d_clean.png", "w": 1120, "h": 630}, {"f": "v05-12", "cat": "test", "cap": "當時的裁判台（比賽進行中）。", "src": "shots_old/13_admin_live.png", "w": 1437, "h": 1600}, {"f": "v05-13", "cat": "test", "cap": "裁判台：終場結果。", "src": "shots_old/16_admin_final.png", "w": 1292, "h": 1600}, {"f": "v05-14", "cat": "test", "cap": "賽事紀錄頁：可匯出 CSV。", "src": "shots_old/17_admin_history.png", "w": 1440, "h": 900}, {"f": "v05-15", "cat": "make", "cap": "除錯：調整球門鏡頭構圖時的截圖（後來改到斜後方較高處）。", "src": "shots/dbg_goalcam.png", "w": 960, "h": 540}]}, {"id": "v06", "ver": "v0.6.0", "title": "第 6 階段：打磨與打包", "time": "10/17 01:42–07:08", "summary": "效能優化（繪製呼叫減少約 60%）、單一執行檔（免安裝 exe）、13 章使用手冊。打包後的 exe 也跑了一次完整的端對端測試。", "items": [{"f": "v06-01", "cat": "make", "cap": "內建使用手冊（主機開啟後的 /manual）。", "src": "shots/m_manual.png", "w": 1280, "h": 800}, {"f": "v06-02", "cat": "make", "cap": "手冊的常見問題章節。", "src": "shots/m_faq.png", "w": 1280, "h": 800}, {"f": "v06-03", "cat": "make", "cap": "手冊列印成 PDF 的版面檢查。", "src": "shots/mpdf-1.png", "w": 414, "h": 586}, {"f": "v06-04", "cat": "test", "cap": "打包後的單一執行檔實測：大廳畫面正常。", "src": "shots_exe/0_lobby.png", "w": 1280, "h": 863}, {"f": "v06-05", "cat": "test", "cap": "打包版的大屏轉播畫面。", "src": "shots_exe/7_spectate_broadcast.png", "w": 1600, "h": 900}, {"f": "v06-06", "cat": "test", "cap": "v0.6.0 大屏回歸測試：比分總覽。", "src": "shots6/b5_standings.png", "w": 1120, "h": 630}, {"f": "v06-07", "cat": "test", "cap": "v0.6.0 大屏回歸測試：賽後成績。", "src": "shots6/b11_final_stats.png", "w": 1120, "h": 630}]}, {"id": "v07", "ver": "v0.7.0", "title": "Blender 精緻球機與預烘焙光影場館", "time": "10/17 07:22–08:42", "summary": "用程式驅動 Blender 建模：20 cm 球籠球機、球門，以及整座體育館；用 Cycles 把燈光與陰影預先烘焙成光照貼圖。下面可以看到場館亮度從過曝、過暗到調整完成的過程。", "items": [{"f": "v07-01", "cat": "make", "cap": "Blender 球機預覽：7 圈弧條球籠、X 機架、馬達、三葉槳、腰帶 LED。", "src": "shots/bl_drone.png", "w": 900, "h": 650}, {"f": "v07-02", "cat": "make", "cap": "調整後的球機：球籠接點對準交會處。", "src": "shots/bl_drone2.png", "w": 900, "h": 650}, {"f": "v07-03", "cat": "make", "cap": "精緻球機放進遊戲的近拍。", "src": "shots/m1_close0.png", "w": 1120, "h": 630}, {"f": "v07-04", "cat": "make", "cap": "除錯：烘焙光照貼圖剛輸出時是黑的，檢查後改用自己的存檔流程。", "src": "shots/lm_test.png", "w": 1024, "h": 512}, {"f": "v07-05", "cat": "make", "cap": "第一次套用烘焙場館：整體過曝。", "src": "shots/b1_spec_wide.png", "w": 1120, "h": 630}, {"f": "v07-06", "cat": "make", "cap": "調整中：這次又太暗。", "src": "shots/b3_spec_wide.png", "w": 1120, "h": 630}, {"f": "v07-07", "cat": "make", "cap": "分開設定場館與場地的曝光後，亮度正常。", "src": "shots/b4_spec_wide.png", "w": 1120, "h": 630}, {"f": "v07-08", "cat": "make", "cap": "前後對照：上為程式產生的場館，下為 Blender 模型＋預烘焙光影。", "src": "shots/compare_before_after.png", "w": 960, "h": 1100}, {"f": "v07-09", "cat": "make", "cap": "大型練習場地也有對應的烘焙場館。", "src": "shots/c_large_wide.png", "w": 1280, "h": 720}, {"f": "v07-10", "cat": "make", "cap": "球機近拍：隊色腰帶燈與球籠細節。", "src": "shots/c_drone_close.png", "w": 1280, "h": 720}, {"f": "v07-11", "cat": "make", "cap": "看台與座椅（此時觀眾仍是簡易人形）。", "src": "shots/c_stands.png", "w": 1280, "h": 720}, {"f": "v07-12", "cat": "make", "cap": "全場俯視。", "src": "shots/c_top.png", "w": 1280, "h": 720}, {"f": "v07-13", "cat": "test", "cap": "測試：場地尺寸與烘焙資料不符時，自動退回程式產生的場館。", "src": "shots/fallback.png", "w": 900, "h": 500}, {"f": "v07-14", "cat": "test", "cap": "v0.7.0 回歸測試：操作手追尾視角。", "src": "shots_v07/4_station_chase.png", "w": 1280, "h": 720}]}, {"id": "v08", "ver": "v0.8.0", "title": "Blender 觀眾與高畫質 GTAO、多光源陰影", "time": "10/17 09:14–09:26", "summary": "觀眾換成 Blender 製作的三種坐姿人形；高畫質加入 GTAO 環境光遮蔽與兩盞會投影的聚光燈。", "items": [{"f": "v08-01", "cat": "make", "cap": "三種坐姿觀眾原型（雙手放膝、前傾、舉手揮動）。", "src": "shots/crowd_prev.png", "w": 1100, "h": 600}, {"f": "v08-02", "cat": "make", "cap": "高畫質看台：上衣依隊色與隨機配色。", "src": "shots/v8_high_crowd.png", "w": 1280, "h": 720}, {"f": "v08-03", "cat": "make", "cap": "高畫質：GTAO 讓座椅與人物之間出現接觸暗部。", "src": "shots/v8_high_crowd2.png", "w": 1280, "h": 720}, {"f": "v08-04", "cat": "make", "cap": "同一角度的標準畫質（沒有 GTAO），可與上一張對照。", "src": "shots/v8_medium_crowd2.png", "w": 1280, "h": 720}, {"f": "v08-05", "cat": "make", "cap": "高畫質：球機在地上有三道不同方向的格狀影子。", "src": "shots/v8b_high_top.png", "w": 1280, "h": 720}, {"f": "v08-06", "cat": "test", "cap": "標準與高畫質的影子對照。", "src": "shots/top_cmp.png", "w": 960, "h": 1080}]}, {"id": "v09", "ver": "v0.9.0", "title": "攻擊手規則與自訂隊色", "time": "10/17 11:01–11:06", "summary": "新增「僅攻擊手可得分」開關與攻擊手人數（1～2 名）；攻擊手整圈腰帶燈改亮黃色；隊色可在裁判台自訂，比賽中也能改。", "items": [{"f": "v09-01", "cat": "make", "cap": "攻擊手（藍 2）亮黃色腰帶燈、名牌加 ★，和一般隊員（紅 4）明顯不同。", "src": "shots/v9_def_close1.png", "w": 1280, "h": 720}, {"f": "v09-02", "cat": "test", "cap": "每隊 2 名攻擊手的實測：右側名單「★攻」、雷達黃圈。", "src": "shots/v9_def_cmp.png", "w": 960, "h": 1080}, {"f": "v09-03", "cat": "test", "cap": "比賽進行中把隊色改成綠 / 紫：球門燈環、座椅、觀眾上衣、計分板立即換色。", "src": "shots/v9_custom_wide.png", "w": 1280, "h": 720}, {"f": "v09-04", "cat": "make", "cap": "裁判台的隊色卡片。", "src": "shots/v9_admin_colors.png", "w": 538, "h": 140}, {"f": "v09-05", "cat": "test", "cap": "兩隊選了相近的綠色時，裁判台顯示提醒。", "src": "shots/v9_admin_warn.png", "w": 538, "h": 167}]}, {"id": "v010", "ver": "v0.10.0", "title": "外觀主題（Mod）系統", "time": "10/17 13:28–14:40", "summary": "三個內建主題（寫實、賽璐珞、繽紛潑漆）可隨時切換；卡通主題使用 Q 版觀眾；進球時有潑漆或彩帶特效；可在 mods 資料夾放自製主題。", "items": [{"f": "v010-01", "cat": "make", "cap": "三種主題對照（上→下：寫實、賽璐珞、繽紛潑漆）。", "src": "shots/th_grid.png", "w": 1280, "h": 1080}, {"f": "v010-02", "cat": "make", "cap": "賽璐珞主題：平塗色塊、黑色描邊、漫畫分格介面。", "src": "shots/th_cel_close.png", "w": 1280, "h": 720}, {"f": "v010-03", "cat": "make", "cap": "繽紛潑漆主題：深紫場館、墨漬造型計分板、粉圓字體。", "src": "shots/th_inkpop_wide.png", "w": 1280, "h": 720}, {"f": "v010-04", "cat": "make", "cap": "操作手畫面：賽璐珞（上）與繽紛潑漆（下），地板有兩隊潑漆。", "src": "shots/th_station_cmp.png", "w": 960, "h": 1080}, {"f": "v010-05", "cat": "make", "cap": "繽紛潑漆主題下的裁判台。", "src": "shots/th_inkpop_admin.png", "w": 1400, "h": 1000}, {"f": "v010-06", "cat": "make", "cap": "第一版主題的問題：球門燈環過亮、地板太白、球機描邊太粗（之後修正）。", "src": "shots/th_close_cmp.png", "w": 960, "h": 1080}, {"f": "v010-07", "cat": "make", "cap": "Q 版觀眾原型：大頭圓臉、大眼睛、腮紅、短手短腳。", "src": "shots/chibi_prev.png", "w": 1100, "h": 600}, {"f": "v010-08", "cat": "make", "cap": "賽璐珞主題的 Q 版觀眾看台。", "src": "shots/chibi_cel_1.png", "w": 1280, "h": 720}, {"f": "v010-09", "cat": "make", "cap": "繽紛潑漆主題的 Q 版觀眾看台。", "src": "shots/chibi_inkpop_1.png", "w": 1280, "h": 720}, {"f": "v010-10", "cat": "make", "cap": "進球特效：繽紛潑漆的油漆噴濺（上）、賽璐珞的彩帶（下）。", "src": "shots/fx_grid.png", "w": 1280, "h": 720}, {"f": "v010-11", "cat": "test", "cap": "潑漆落地前後：藍色墨漬灑在紅方半場。", "src": "shots/fx2.png", "w": 1280, "h": 360}, {"f": "v010-12", "cat": "test", "cap": "自製主題範例「海洋」：只寫一份設定檔，其餘沿用繽紛潑漆。", "src": "shots/th_ocean.png", "w": 1280, "h": 360}]}];
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const CAT = { make: '製作', test: '測試' };
+let filter = 'all';
+const all = [];
+const total = DATA.reduce((n, c) => n + c.items.length, 0);
+const makeN = DATA.reduce((n, c) => n + c.items.filter(i => i.cat === 'make').length, 0);
+$('facts').innerHTML = `<span><b>${DATA.length - 1}</b>個版本</span><span><b>${total}</b>張截圖</span><span><b>${makeN}</b>張製作過程</span><span><b>${total - makeN}</b>張測試驗證</span>`;
+$('toc').innerHTML = DATA.map(c => `<a href="#${c.id}" data-id="${c.id}"><span class="v">${c.id === 'overview' ? '總覽' : c.ver}</span><span class="n">${esc(c.id === 'overview' ? '系統功能總覽' : c.title)}</span></a>`).join('');
+$('main').innerHTML = DATA.map(c => `
+  <section class="ch" id="${c.id}">
+    <div class="ch-head">
+      <div class="ver"><span class="v">${c.id === 'overview' ? '總覽' : c.ver}</span><span class="t">${esc(c.time)}</span><span class="count" data-count="${c.id}"></span></div>
+      <h2>${esc(c.title)}</h2>
+      <p>${esc(c.summary)}</p>
+    </div>
+    <div class="grid">${c.items.map(it => { const k = all.push({ ...it, ch: c }) - 1; return `
+      <figure class="shot" data-cat="${it.cat}" data-k="${k}">
+        <button type="button" aria-label="放大：${esc(it.cap)}"><img src="thumb/${it.f}.jpg" alt="${esc(it.cap)}" loading="lazy" width="640" height="360"><span class="tag ${it.cat}">${CAT[it.cat]}</span></button>
+        <figcaption>${esc(it.cap)}</figcaption>
+      </figure>`; }).join('')}</div>
+  </section>`).join('');
+
+function applyFilter(f) {
+  filter = f;
+  for (const b of document.querySelectorAll('.filters button')) b.setAttribute('aria-pressed', String(b.dataset.f === f));
+  for (const el of document.querySelectorAll('figure.shot')) el.hidden = f !== 'all' && el.dataset.cat !== f;
+  for (const c of DATA) {
+    const n = c.items.filter(i => f === 'all' || i.cat === f).length;
+    const sec = $(c.id); sec.hidden = n === 0;
+    sec.querySelector('[data-count]').textContent = `${n} 張`;
+    const a = document.querySelector(`#toc a[data-id="${c.id}"]`); if (a) a.hidden = n === 0;
+  }
+  try { localStorage.setItem('ds-gallery-filter', f); } catch {}
+}
+document.querySelector('.filters').addEventListener('click', e => { const b = e.target.closest('button'); if (b) applyFilter(b.dataset.f); });
+let saved = 'all'; try { saved = localStorage.getItem('ds-gallery-filter') || 'all'; } catch {}
+applyFilter(['all', 'make', 'test'].includes(saved) ? saved : 'all');
+
+// 目前閱讀的版本（時間軸標示）
+const io = new IntersectionObserver(es => {
+  for (const e of es) if (e.isIntersecting) for (const a of document.querySelectorAll('#toc a')) a.classList.toggle('on', a.dataset.id === e.target.id);
+}, { rootMargin: '-20% 0px -70% 0px' });
+for (const s of document.querySelectorAll('section.ch')) io.observe(s);
+
+// 放大檢視
+let cur = -1;
+const visible = () => all.map((x, k) => k).filter(k => filter === 'all' || all[k].cat === filter);
+function show(k) {
+  cur = k; const it = all[k], list = visible(), pos = list.indexOf(k);
+  $('lbImg').src = `img/${it.f}.jpg`; $('lbImg').alt = it.cap;
+  $('lbCap').innerHTML = `${esc(it.cap)}<small>${it.ch.id === 'overview' ? '總覽' : it.ch.ver}・${CAT[it.cat]}・${esc(it.src)}</small>`;
+  $('lbPos').textContent = `${pos + 1} / ${list.length}　${it.ch.id === 'overview' ? '系統功能總覽' : it.ch.ver + ' ' + it.ch.title}`;
+  $('lb').hidden = false; document.body.style.overflow = 'hidden';
+}
+function step(d) { const list = visible(); const i = list.indexOf(cur); show(list[(i + d + list.length) % list.length]); }
+function close() { $('lb').hidden = true; document.body.style.overflow = ''; const f = document.querySelector(`figure[data-k="${cur}"] button`); f?.focus(); }
+$('main').addEventListener('click', e => { const f = e.target.closest('figure.shot'); if (f) show(Number(f.dataset.k)); });
+$('lbPrev').onclick = () => step(-1); $('lbNext').onclick = () => step(1); $('lbClose').onclick = close;
+$('lb').addEventListener('click', e => { if (e.target === $('lb') || e.target.classList.contains('imgbox')) close(); });
+addEventListener('keydown', e => { if ($('lb').hidden) return; if (e.key === 'Escape') close(); if (e.key === 'ArrowLeft') step(-1); if (e.key === 'ArrowRight') step(1); });
+let sx = null;
+$('lb').addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+$('lb').addEventListener('touchend', e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 50) step(dx < 0 ? 1 : -1); sx = null; });
+</script>
+
+</body>
+</html>
